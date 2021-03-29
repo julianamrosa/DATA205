@@ -1,0 +1,444 @@
+---
+title: "Exploratory Data Analysis"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#Dataframes created on the data_ingestion_wrangling_mc, and data_ingestion_wrangling_us scripts will be used here.
+```
+
+```{r}
+#Loading packages
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(questionr)
+library(readxl)
+```
+# Distributions
+
+## Montgomery County
+
+```{r}
+#Importing clean mc data (previously created)
+hc_mc <- read_excel("hc_mc.xlsx")
+```
+
+```{r}
+#Assigning appropriate data types
+hc_mc$victim_count <- as.integer(hc_mc$victim_count)
+hc_mc$suspect_count <- as.integer(hc_mc$suspect_count)
+hc_mc$suspects_less_than_18_years <- as.integer(hc_mc$suspects_less_than_18_years)
+hc_mc$suspects_18_35_years_old <- as.integer(hc_mc$suspects_18_35_years_old)
+hc_mc$suspects_36_45_years_old <- as.integer(hc_mc$suspects_36_45_years_old)
+hc_mc$suspects_46_55_years_old <- as.integer(hc_mc$suspects_46_55_years_old)
+hc_mc$suspects_55_years_old <- as.integer(hc_mc$suspects_55_years_old)
+```
+
+
+```{r}
+#incident_date
+
+##NA's
+sum(is.na(hc_mc$incident_date))
+
+##Plot
+ggplot(hc_mc, aes(year(incident_date)))+
+  geom_freqpoly(color="darkgreen", bins=6)+
+  theme_light()+
+  xlab("Year")+
+  ylab("Incidents")+
+  ggtitle("Bias Incidents Over the Years", subtitle="Montgomery County")+
+  scale_x_continuous(breaks=seq(2016, 2021, 1))
+```
+
+From 2016 to 2017 there was a considerable increase in bias incidents. Then we see the incident count decreasing a lot in 2018, getting even lower than it was in 2016. Between 2018 and 2020 there was another increase, leaving 2020 with the second highest frequency of incidents.
+
+```{r}
+#bias_code
+
+##NA's
+sum(is.na(hc_mc$bias_code))
+
+##Plot
+ggplot(hc_mc, aes(bias_code))+
+  geom_bar(fill="darkblue")+
+  theme_light()+
+  xlab("Bias")+
+  ylab("Incidents")+
+  ggtitle("Bias Incidents", subtitle="Montgomery County")+
+  coord_flip()
+```
+
+```{r}
+#offense
+
+##NA's
+sum(is.na(hc_mc$offense))
+
+##Plot
+ggplot(hc_mc, aes(offense))+
+  geom_bar(fill="darkgreen")+
+  theme_light()+
+  xlab("Offense")+
+  ylab("Incidents")+
+  ggtitle("Reported Offenses", subtitle="Montgomery County")
+```
+
+```{r}
+#case_status
+
+##Frequency Table
+freq(hc_mc$case_status, sort="dec")
+```
+
+```{r}
+#victim_type
+
+##NA's
+sum(is.na(hc_mc$victim_type))
+
+##Plot
+ggplot(hc_mc, aes(victim_type))+
+  geom_bar(fill="darkorange")+
+  theme_light()+
+  xlab("Victim Type")+
+  ylab("Incidents")+
+  ggtitle("Types of Victims", subtitle="Montgomery County")+
+  coord_flip()
+```
+
+```{r}
+#victim_count
+
+##NA's
+sum(is.na(hc_mc$victim_count))
+
+##Plot
+ggplot(hc_mc, aes(victim_count))+
+  geom_bar(fill="blueviolet")+
+  theme_light()+
+  xlab("Victim Count")+
+  ylab("Incidents")+
+  ggtitle("Number of Victims", subtitle="Montgomery County")
+
+##Descriptive Statistics
+hc_mc%>%
+  summarise(Min=min(victim_count, na.rm=TRUE), Q1=quantile(victim_count, 0.25, na.rm=TRUE), Median=median(victim_count, na.rm=TRUE), Q3=quantile(victim_count, 0.75, na.rm=TRUE), Max=max(victim_count, na.rm=TRUE), Mean=mean(victim_count, na.rm=TRUE))
+```
+
+```{r}
+#suspect_count
+
+##NA's
+sum(is.na(hc_mc$suspect_count))
+
+##Plot
+ggplot(hc_mc, aes(suspect_count))+
+  geom_bar(fill="darkgoldenrod2")+
+  theme_light()+
+  xlab("Suspect Count")+
+  ylab("Incidents")+
+  ggtitle("Number of Suspects", subtitle="Montgomery County")
+
+##Descriptive Statistics
+hc_mc%>%
+  summarise(Min=min(suspect_count, na.rm=TRUE), Q1=quantile(suspect_count, 0.25, na.rm=TRUE), Median=median(suspect_count, na.rm=TRUE), Q3=quantile(suspect_count, 0.75, na.rm=TRUE), Max=max(suspect_count, na.rm=TRUE), Mean=mean(suspect_count, na.rm=TRUE))
+```
+
+```{r}
+#suspects_less_than_18_years
+
+##Frequency Table
+freq(hc_mc$suspects_less_than_18_years, exclude=NA, total=TRUE)
+
+##Descriptive Statistics
+hc_mc%>%
+  summarise(Min=min(suspects_less_than_18_years, na.rm=TRUE), Q1=quantile(suspects_less_than_18_years, 0.25, na.rm=TRUE), Median=median(suspects_less_than_18_years, na.rm=TRUE), Q3=quantile(suspects_less_than_18_years, 0.75, na.rm=TRUE), Max=max(suspects_less_than_18_years, na.rm=TRUE), Mean=mean(suspects_less_than_18_years, na.rm=TRUE))
+```
+
+
+```{r}
+#suspects_18_35_years_old
+
+##Frequency Table
+freq(hc_mc$suspects_18_35_years_old, exclude=NA, total=TRUE)
+
+##Descriptive Statistics
+hc_mc%>%
+  summarise(Min=min(suspects_18_35_years_old, na.rm=TRUE), Q1=quantile(suspects_18_35_years_old, 0.25, na.rm=TRUE), Median=median(suspects_18_35_years_old, na.rm=TRUE), Q3=quantile(suspects_18_35_years_old, 0.75, na.rm=TRUE), Max=max(suspects_18_35_years_old, na.rm=TRUE), Mean=mean(suspects_18_35_years_old, na.rm=TRUE))
+```
+
+```{r}
+#suspects_36_45_years_old
+
+##Frequency Table
+freq(hc_mc$suspects_36_45_years_old, exclude=NA, total=TRUE)
+
+##Descriptive Statistics
+hc_mc%>%
+  summarise(Min=min(suspects_36_45_years_old, na.rm=TRUE), Q1=quantile(suspects_36_45_years_old, 0.25, na.rm=TRUE), Median=median(suspects_36_45_years_old, na.rm=TRUE), Q3=quantile(suspects_36_45_years_old, 0.75, na.rm=TRUE), Max=max(suspects_36_45_years_old, na.rm=TRUE), Mean=mean(suspects_36_45_years_old, na.rm=TRUE))
+```
+
+```{r}
+#suspects_46_55_years_old
+
+##Frequency Table
+freq(hc_mc$suspects_46_55_years_old, exclude=NA, total=TRUE)
+
+##Descriptive Statistics
+hc_mc%>%
+  summarise(Min=min(suspects_46_55_years_old, na.rm=TRUE), Q1=quantile(suspects_46_55_years_old, 0.25, na.rm=TRUE), Median=median(suspects_46_55_years_old, na.rm=TRUE), Q3=quantile(suspects_46_55_years_old, 0.75, na.rm=TRUE), Max=max(suspects_46_55_years_old, na.rm=TRUE), Mean=mean(suspects_46_55_years_old, na.rm=TRUE))
+```
+
+```{r}
+#suspects_55_years_old
+
+##Frequency Table
+freq(hc_mc$suspects_55_years_old, exclude=NA, total=TRUE)
+
+##Descriptive Statistics
+hc_mc%>%
+  summarise(Min=min(suspects_55_years_old, na.rm=TRUE), Q1=quantile(suspects_55_years_old, 0.25, na.rm=TRUE), Median=median(suspects_55_years_old, na.rm=TRUE), Q3=quantile(suspects_55_years_old, 0.75, na.rm=TRUE), Max=max(suspects_55_years_old, na.rm=TRUE), Mean=mean(suspects_55_years_old, na.rm=TRUE))
+```
+
+## United States
+
+```{r}
+#Importing clean us data (previously created)
+hc_us <- read_excel("hc_us.xlsx")
+```
+
+```{r}
+#Assigning appropriate data types
+hc_us$victim_count <- as.integer(hc_us$victim_count)
+hc_us$offender_count <- as.integer(hc_us$offender_count)
+hc_us$adult_offenders <- as.integer(hc_us$adult_offenders)
+hc_us$juvenile_offenders <- as.integer(hc_us$juvenile_offenders)
+```
+
+```{r}
+#year
+
+##NA's
+sum(is.na(hc_us$year))
+
+##Plot
+ggplot(hc_us, aes(year))+
+  geom_freqpoly(color="darkgreen", bins=28)+
+  theme_light()+
+  xlab("Year")+
+  ylab("Incidents")+
+  ggtitle("Bias Incidents Over the Years", subtitle="United States")+
+  scale_x_continuous(breaks=seq(1991, 2018, 1))+
+  theme(axis.text.x = element_text(angle=45))
+```
+
+
+```{r}
+#state
+
+##NA's
+sum(is.na(hc_us$state))
+
+##Ordering states by population
+hc_us$state <- factor(hc_us$state, levels=c("California", "Texas", "Florida",
+                                                       "New York", "Illinois",
+                                                       "Pennsylvania", "Ohio", "Georgia",
+                                                       "North Carolina", "Michigan",
+                                                       "New Jersey", "Virginia",
+                                                       "Washington", "Arizona",
+                                                       "Massachusetts", "Tennessee",
+                                                       "Indiana", "Missouri", "Maryland",
+                                                       "Wisconsin", "Colorado",
+                                                       "Minnesota", "South Carolina",
+                                                       "Alabama", "Louisiana", "Kentucky",
+                                                       "Oregon", "Oklahoma",
+                                                       "Connecticut", "Utah", "Iowa",
+                                                       "Nevada", "Arkansas",
+                                                       "Mississippi", "Kansas",
+                                                       "New Mexico", "Nebraska",
+                                                       "West Virginia", "Idaho", "Hawaii",
+                                                       "New Hampshire", "Maine",
+                                                       "Montana", "Rhode Island",
+                                                       "Delaware", "South Dakota",
+                                                       "North Dakota", "Alaska",
+                                                       "District of Columbia", "Vermont",
+                                                       "Wyoming"), ordered=TRUE)
+
+##Plot
+ggplot()+
+  geom_bar(aes(x=hc_us$state, y = (..count..)/sum(..count..)), fill="burlywood")+
+  coord_flip()+
+  scale_y_continuous(labels=scales::percent)+
+  theme_light()+
+  xlab("State")+
+  ylab("Percentage of Incidents")+
+  ggtitle("Bias Incidents by States", subtitle="United States")
+```
+
+```{r}
+#bias_code
+
+##NA's
+sum(is.na(hc_us$bias_code))
+
+##Plot
+ggplot(hc_us, aes(bias_code))+
+  geom_bar(fill="darkblue")+
+  theme_light()+
+  xlab("Bias")+
+  ylab("Incidents")+
+  ggtitle("Bias Incidents", subtitle="United States")+
+  coord_flip()
+```
+
+```{r}
+#offense
+
+##NA's
+sum(is.na(hc_us$offense))
+
+##Plot
+ggplot(hc_us, aes(offense))+
+  geom_bar(fill="darkgreen")+
+  theme_light()+
+  xlab("Offense")+
+  ylab("Incidents")+
+  ggtitle("Reported Offenses", subtitle="United States")
+```
+
+```{r}
+#victim_type
+
+##NA's
+sum(is.na(hc_us$victim_type))
+
+##Plot
+ggplot(hc_us%>%filter(!is.na(victim_type)), aes(victim_type))+
+  geom_bar(fill="darkorange")+
+  theme_light()+
+  xlab("Victim Type")+
+  ylab("Incidents")+
+  ggtitle("Types of Victims", subtitle="United States")+
+  coord_flip()
+```
+
+```{r}
+#victim_count
+
+##NA's
+sum(is.na(hc_us$victim_count))
+
+##Plot
+ggplot(hc_us, aes(victim_count))+
+  geom_boxplot(color="blueviolet")+
+  theme_light()+
+  xlab("Victim Count")+
+  ylab("Incidents")+
+  ggtitle("Number of Victims", subtitle="United States")
+
+##Descriptive Statistics
+hc_us%>%
+  summarise(Min=min(victim_count, na.rm=TRUE), Q1=quantile(victim_count, 0.25, na.rm=TRUE), Median=median(victim_count, na.rm=TRUE), Q3=quantile(victim_count, 0.75, na.rm=TRUE), Max=max(victim_count, na.rm=TRUE), Mean=mean(victim_count, na.rm=TRUE))
+```
+
+```{r}
+#offender_count
+
+##NA's
+sum(is.na(hc_us$offender_count))
+
+##Plot
+ggplot(hc_us, aes(offender_count))+
+  geom_boxplot(color="darkgoldenrod2")+
+  theme_light()+
+  xlab("Offender Count")+
+  ylab("Incidents")+
+  ggtitle("Number of Offenders", subtitle="United States")
+
+##Descriptive Statistics
+hc_us%>%
+  summarise(Min=min(offender_count, na.rm=TRUE), Q1=quantile(offender_count, 0.25, na.rm=TRUE), Median=median(offender_count, na.rm=TRUE), Q3=quantile(offender_count, 0.75, na.rm=TRUE), Max=max(offender_count, na.rm=TRUE), Mean=mean(offender_count, na.rm=TRUE))
+```
+
+```{r}
+#juvenile_offenders
+
+##Frequency Table
+freq(hc_us$juvenile_offenders)
+
+##Descriptive Statistics
+hc_us%>%
+  summarise(Min=min(juvenile_offenders, na.rm=TRUE), Q1=quantile(juvenile_offenders, 0.25, na.rm=TRUE), Median=median(juvenile_offenders, na.rm=TRUE), Q3=quantile(juvenile_offenders, 0.75, na.rm=TRUE), Max=max(juvenile_offenders, na.rm=TRUE), Mean=mean(juvenile_offenders, na.rm=TRUE))
+```
+
+```{r}
+#adult_offenders
+
+##Frequency Table
+freq(hc_us$adult_offenders)
+
+##Descriptive Statistics
+hc_us%>%
+  summarise(Min=min(adult_offenders, na.rm=TRUE), Q1=quantile(adult_offenders, 0.25, na.rm=TRUE), Median=median(adult_offenders, na.rm=TRUE), Q3=quantile(adult_offenders, 0.75, na.rm=TRUE), Max=max(adult_offenders, na.rm=TRUE), Mean=mean(adult_offenders, na.rm=TRUE))
+```
+
+```{r}
+#offender_race
+
+##NA's
+sum(is.na(hc_us$offender_race))
+
+##Plot
+ggplot(hc_us%>%filter(!is.na(offender_race)), aes(offender_race))+
+  geom_bar(fill="aquamarine2")+
+  theme_light()+
+  xlab("Offender's Race")+
+  ylab("Incidents")+
+  ggtitle("Race of the Offenders", subtitle="United States")+
+  theme(axis.text.x = element_text(angle=10))
+```
+
+# Relationships
+
+## Montgomery County
+
+```{r}
+#Offense X victim_type
+
+##Two-Way Table
+table(hc_mc$victim_type, hc_mc$offense)
+```
+
+## United States
+
+```{r}
+#adult_offenders X juvenile_offenders
+
+ggplot(hc_us, aes(adult_offenders, juvenile_offenders))+
+  geom_jitter(color="brown", alpha=0.5)+
+  theme_light()+
+  ggtitle("Incidents with Adult and/or Juvenile Offenders", subtitle="United States")+
+  xlab("Adult Offenders")+
+  ylab("Juvenile Offenders")
+```
+
+```{r}
+##offender_race X bias_code
+
+ggplot(hc_us%>%filter(!is.na(offender_race)), aes(bias_code, fill=offender_race))+
+  geom_bar(position="dodge")+
+  coord_flip()+
+  theme_light()+
+  ggtitle("Association between Bias and 
+          Offender's Race")+
+  xlab("Bias Code")+
+  ylab("Incidents")+
+  theme(axis.text.x = element_text(angle=45))+
+  scale_fill_manual("Offender's Race", values=c("yellow", "orange", "red", "green", "blue", "purple"))
+```
