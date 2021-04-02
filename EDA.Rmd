@@ -56,7 +56,20 @@ ggplot(hc_mc, aes(year(incident_date)))+
   scale_x_continuous(breaks=seq(2016, 2021, 1))
 ```
 
-From 2016 to 2017 there was a considerable increase in bias incidents. Then we see the incident count decreasing a lot in 2018, getting even lower than it was in 2016. Between 2018 and 2020 there was another increase, leaving 2020 with the second highest frequency of incidents.
+From 2016 to 2017 there was a considerable increase in bias incidents. Then we see the incident count decreasing a lot in 2018, getting even lower than it was in 2016. Between 2018 and 2020 there was another increase, leaving 2020 with the second highest frequency of incidents. That is surprising... crimes in general have decreased with the pandemic, but it seems like it was the opposite with hate crimes. Let's find out why.
+
+```{r}
+#year for Anti-Asian incidents
+
+ggplot(hc_mc%>%filter(bias_code=="Anti-Asian"), aes(year(incident_date)))+
+  geom_freqpoly(color="darkgreen", bins=6)+
+  theme_light()+
+  xlab("Year")+
+  ylab("Incidents")+
+  ggtitle("Bias Against Asians Over the Years", subtitle="Montgomery County")+
+  scale_x_continuous(breaks=seq(2016, 2021, 1))
+```
+There it is, our 2020 spike on bias incidents. Asians have been even more discriminated ever since the coronavirus pandemic started.
 
 ```{r}
 #bias_code
@@ -74,6 +87,8 @@ ggplot(hc_mc, aes(bias_code))+
   coord_flip()
 ```
 
+Anti-Black and Anti-Jewish are the most common bias, with more than triple the count of the third most frequent bias (Anti-Homosexual). Anti-Multi-Racial, Anti-Hispanic, Anti-Islamic, Anti-Asian, Anti-White, and Anti-Transgender are also very common bias codes.
+
 ```{r}
 #offense
 
@@ -89,12 +104,17 @@ ggplot(hc_mc, aes(offense))+
   ggtitle("Reported Offenses", subtitle="Montgomery County")
 ```
 
+It looks like hate and bias are commonly manifested through vandalism, intimidation, and assault, in the given order.
+
 ```{r}
 #case_status
 
 ##Frequency Table
 freq(hc_mc$case_status, sort="dec")
 ```
+
+There are 174 missing values for the case status variable, which corresponds to approximately 30% of the data. Since almost 70% of the data is still available, there probably won't be a problem in this variable's analysis.
+Looking only at the known values, we can see that more than half the cases are still open, and only 28.4% of them are actually closed.
 
 ```{r}
 #victim_type
@@ -111,6 +131,8 @@ ggplot(hc_mc, aes(victim_type))+
   ggtitle("Types of Victims", subtitle="Montgomery County")+
   coord_flip()
 ```
+
+As expected, individual victims are the common target for hate crimes. Interestingly, the second most common type of victim is school/ college, which I suspect might be related to the vandalism incidents. This will be investigated later on.
 
 ```{r}
 #victim_count
@@ -131,6 +153,12 @@ hc_mc%>%
   summarise(Min=min(victim_count, na.rm=TRUE), Q1=quantile(victim_count, 0.25, na.rm=TRUE), Median=median(victim_count, na.rm=TRUE), Q3=quantile(victim_count, 0.75, na.rm=TRUE), Max=max(victim_count, na.rm=TRUE), Mean=mean(victim_count, na.rm=TRUE))
 ```
 
+Almost half of the data is missing for this variable. For that reason, I will probably use the United States (kaggle) dataset when I want to perform more sophisticated analyses on the victim counts.
+This distribution is right-skewed, since it is more common to have a single victim of a bias incident, and the more you increase the number of victims the less incidents you get.
+The values of the first, second, and third quartiles are equal to 1. This is what happens to position measures when your variable has a value that stands out with a much higher frequency than the rest.
+My sixth research question (What is the median for the number of victims? What about the mean? Which one is more informative in this case?) is partially answered here: the point estimate for the mean is 1.21 and for the median is 1, and since the distribution is not symmetric, the median is a better indicator of the center of the distribution.
+
+
 ```{r}
 #suspect_count
 
@@ -150,8 +178,16 @@ hc_mc%>%
   summarise(Min=min(suspect_count, na.rm=TRUE), Q1=quantile(suspect_count, 0.25, na.rm=TRUE), Median=median(suspect_count, na.rm=TRUE), Q3=quantile(suspect_count, 0.75, na.rm=TRUE), Max=max(suspect_count, na.rm=TRUE), Mean=mean(suspect_count, na.rm=TRUE))
 ```
 
+There are more than half of the values missing for this variable. So again, the United States (kaggle) dataset will probably be better fitted for the suspect count study.
+The shape of the distribution is the same as it was for the victim count: right-skewed.
+The measures of position are, again, all equal to 1, because of the extremely high frequency of that value on the distribution.
+Research question number 5, which is equivalent to the already mentioned sixth question, is partially answered with the point estimates 1 and 1.34 for the median and mean, respectively.
+
 ```{r}
 #suspects_less_than_18_years
+
+##Na's
+sum(is.na(hc_mc$suspects_less_than_18_years))
 
 ##Frequency Table
 freq(hc_mc$suspects_less_than_18_years, exclude=NA, total=TRUE)
@@ -161,9 +197,16 @@ hc_mc%>%
   summarise(Min=min(suspects_less_than_18_years, na.rm=TRUE), Q1=quantile(suspects_less_than_18_years, 0.25, na.rm=TRUE), Median=median(suspects_less_than_18_years, na.rm=TRUE), Q3=quantile(suspects_less_than_18_years, 0.75, na.rm=TRUE), Max=max(suspects_less_than_18_years, na.rm=TRUE), Mean=mean(suspects_less_than_18_years, na.rm=TRUE))
 ```
 
+For all of the age group variables we will be finding a lot of missing values. This happens because in this case, NA can mean that there wasn't a suspect on that incident that belonged to this specific age group.
+For suspects that are less than 18 years old, we have 505 missing values.
+Since these age variables are nothing more than fractions (or subgroups) of the suspect_count variable, the value 1 will always be the most frequent. But what caught my attention about this "less than 18" age group is that only 68.3% of the known suspect count equals 1. As we will be seeing soon, the other age groups all have over 90% of the non-missing data with a value of 1. This means that it is more common for the offenses to be committed by more than 1 offender when the offenders are underage.A consequence of this fact is the third quartile's value: 2. For the other age groups we will find position measures similar to the ones we found for "victim count" and "suspect count", all equal to 1.
+There is a total of 60 cases with suspects that are less than 18 years old.
 
 ```{r}
 #suspects_18_35_years_old
+
+##Na's
+sum(is.na(hc_mc$suspects_18_35_years_old))
 
 ##Frequency Table
 freq(hc_mc$suspects_18_35_years_old, exclude=NA, total=TRUE)
@@ -172,9 +215,16 @@ freq(hc_mc$suspects_18_35_years_old, exclude=NA, total=TRUE)
 hc_mc%>%
   summarise(Min=min(suspects_18_35_years_old, na.rm=TRUE), Q1=quantile(suspects_18_35_years_old, 0.25, na.rm=TRUE), Median=median(suspects_18_35_years_old, na.rm=TRUE), Q3=quantile(suspects_18_35_years_old, 0.75, na.rm=TRUE), Max=max(suspects_18_35_years_old, na.rm=TRUE), Mean=mean(suspects_18_35_years_old, na.rm=TRUE))
 ```
+There are 515 missing values here.
+92% of the known data equals 1.
+There is a total of 50 cases with suspects that are between 18 and 35 years old.
+All of the position measures are equal to 1, except for the maximum value, which is 4. The mean is of 1.12.
 
 ```{r}
 #suspects_36_45_years_old
+
+##Na's
+sum(is.na(hc_mc$suspects_36_45_years_old))
 
 ##Frequency Table
 freq(hc_mc$suspects_36_45_years_old, exclude=NA, total=TRUE)
@@ -184,8 +234,15 @@ hc_mc%>%
   summarise(Min=min(suspects_36_45_years_old, na.rm=TRUE), Q1=quantile(suspects_36_45_years_old, 0.25, na.rm=TRUE), Median=median(suspects_36_45_years_old, na.rm=TRUE), Q3=quantile(suspects_36_45_years_old, 0.75, na.rm=TRUE), Max=max(suspects_36_45_years_old, na.rm=TRUE), Mean=mean(suspects_36_45_years_old, na.rm=TRUE))
 ```
 
+There are 543 missing values.
+There is a total of 22 cases with suspects between 35 and 46 years old. All of those cases have only 1 suspect each.
+All 5 position measures are equal to 1, as well as the mean.
+
 ```{r}
 #suspects_46_55_years_old
+
+##Na's
+sum(is.na(hc_mc$suspects_46_55_years_old))
 
 ##Frequency Table
 freq(hc_mc$suspects_46_55_years_old, exclude=NA, total=TRUE)
@@ -195,8 +252,16 @@ hc_mc%>%
   summarise(Min=min(suspects_46_55_years_old, na.rm=TRUE), Q1=quantile(suspects_46_55_years_old, 0.25, na.rm=TRUE), Median=median(suspects_46_55_years_old, na.rm=TRUE), Q3=quantile(suspects_46_55_years_old, 0.75, na.rm=TRUE), Max=max(suspects_46_55_years_old, na.rm=TRUE), Mean=mean(suspects_46_55_years_old, na.rm=TRUE))
 ```
 
+There are 546 missing values.
+There is a total of 19 cases with suspects between 45 and 55 years old.
+94.7% of those cases had only 1 suspect.
+All of the position measures are equal to 1, except for the maximum value, which is 2. The mean is of 1.05.
+
 ```{r}
 #suspects_55_years_old
+
+##Na's
+sum(is.na(hc_mc$suspects_55_years_old))
 
 ##Frequency Table
 freq(hc_mc$suspects_55_years_old, exclude=NA, total=TRUE)
@@ -205,6 +270,12 @@ freq(hc_mc$suspects_55_years_old, exclude=NA, total=TRUE)
 hc_mc%>%
   summarise(Min=min(suspects_55_years_old, na.rm=TRUE), Q1=quantile(suspects_55_years_old, 0.25, na.rm=TRUE), Median=median(suspects_55_years_old, na.rm=TRUE), Q3=quantile(suspects_55_years_old, 0.75, na.rm=TRUE), Max=max(suspects_55_years_old, na.rm=TRUE), Mean=mean(suspects_55_years_old, na.rm=TRUE))
 ```
+There are 536 missing values here.
+There is a total of 29 cases with suspects aged 55 or older.
+96.6% of those cases had only 1 suspect.
+Once again, all position measures are equal to 1, except for the maximum which is 2.
+The mean has a value of 1.03.
+From the underage suspects forward, we have seen a pattern of decrease in the total of cases for each age group as the ages increased. This is different for the 55 age group: there are more 55 or older suspects than there are suspects of the 36-45 and 46-55 age groups.
 
 ## United States
 
@@ -236,6 +307,79 @@ ggplot(hc_us, aes(year))+
   ggtitle("Bias Incidents Over the Years", subtitle="United States")+
   scale_x_continuous(breaks=seq(1991, 2018, 1))+
   theme(axis.text.x = element_text(angle=45))
+```
+
+We can see that, over the years, there are frequent increases and decreases on the incident count, just like for the Montgomery County year chart.
+The first peak happened between 1992 and 1993, than there is a low point right after, between 1993 and 1994.
+Then, the counts start to increase again and only stops between 1995 and 1996. The incidents then stay at a more stable pace until 2001, when the frequency spikes, reaching its highest point. Could this be related to 9/11? We will take a look at that soon.
+After the 2001 peak, we see a pattern of decrease until 2014, when it starts increasing again.
+For the common time-frame between the two datasets (2016-2018), we see a similar pattern: an increase between 2016 and 2017, and then a decrease from 2017 to 2018.
+Both MC and US year plots represent a first toe dip on my ninth research question (How have bias incidents changed over the years in Montgomery County? How is that different from the national scenario?).
+
+```{r}
+#year plot for anti-islamic incidents
+ggplot(hc_us%>%filter(bias_code=='Anti-Islamic'), aes(year))+
+  geom_freqpoly(color="chartreuse3", bins=28)+
+  theme_light()+
+  xlab("Year")+
+  ylab("Incidents")+
+  ggtitle("Anti-Islamic Incidents Over the Years", subtitle="United States")+
+  scale_x_continuous(breaks=seq(1991, 2018, 1))+
+  theme(axis.text.x = element_text(angle=45))
+```
+As we can see, the 2001 spike is present in the Anti-Islamic plot, and it stands out even more than it did for the previous chart, which included all bias codes.
+So yes, 9/11 clearly had an impact on discrimination against muslims.
+
+```{r}
+#year plot for anti-black incidents
+ggplot(hc_us%>%filter(bias_code=='Anti-Black'), aes(year))+
+  geom_freqpoly(color="chartreuse3", bins=28)+
+  theme_light()+
+  xlab("Year")+
+  ylab("Incidents")+
+  ggtitle("Anti-Black Incidents Over the Years", subtitle="United States")+
+  scale_x_continuous(breaks=seq(1991, 2018, 1))+
+  theme(axis.text.x = element_text(angle=45))
+```
+Anti-Black incidents have been decreasing since 1995, which was the year of the "Million Man March".
+The decrease rate gets even higher after Obama's election in 2008.
+
+```{r}
+#Importing dataset with states' populations in proportion to the country's population
+#Source of data: https://www.infoplease.com/us/states/state-population-by-rank
+#The data were copied from the link above and pasted into excel
+#Before importing it into R, just change "DC" to "District of Columbia" and save the file as pop_states.xlsx
+pop_states <- read_excel("population_states.xlsx")
+
+#Renaming columns
+pop_states <- pop_states%>%
+  rename(state='State', pop_prop='Percent of Total', pop=Population)
+
+#Ordering states by population proportion
+pop_states$state <- factor(pop_states$state, levels=c("California", "Texas", "Florida",
+                                                      "New York", "Illinois",
+                                                      "Pennsylvania", "Ohio", "Georgia",
+                                                      "North Carolina", "Michigan",
+                                                      "New Jersey", "Virginia",
+                                                      "Washington", "Arizona",
+                                                      "Massachusetts", "Tennessee",
+                                                      "Indiana", "Missouri", "Maryland",
+                                                      "Wisconsin", "Colorado",
+                                                      "Minnesota", "South Carolina",
+                                                      "Alabama", "Louisiana", "Kentucky",
+                                                      "Oregon", "Oklahoma",
+                                                      "Connecticut", "Utah", "Iowa",
+                                                      "Nevada", "Arkansas",
+                                                      "Mississippi", "Kansas",
+                                                      "New Mexico", "Nebraska",
+                                                      "West Virginia", "Idaho", "Hawaii",
+                                                      "New Hampshire", "Maine",
+                                                      "Montana", "Rhode Island",
+                                                      "Delaware", "South Dakota",
+                                                      "North Dakota", "Alaska",
+                                                      "District of Columbia", "Vermont",
+                                                      "Wyoming"), ordered=TRUE)
+
 ```
 
 
@@ -270,16 +414,39 @@ hc_us$state <- factor(hc_us$state, levels=c("California", "Texas", "Florida",
                                                        "District of Columbia", "Vermont",
                                                        "Wyoming"), ordered=TRUE)
 
-##Plot
+##Plot 1
 ggplot()+
-  geom_bar(aes(x=hc_us$state, y = (..count..)/sum(..count..)), fill="burlywood")+
+  geom_bar(aes(x=hc_us$state, y = (..count..)/sum(..count..), fill="Incidents"), alpha=0.5)+
+  geom_bar(aes(x=pop_states$state, y=pop_states$pop_prop, fill="Population"), stat='identity', alpha=0.5)+
   coord_flip()+
   scale_y_continuous(labels=scales::percent)+
   theme_light()+
   xlab("State")+
-  ylab("Percentage of Incidents")+
-  ggtitle("Bias Incidents by States", subtitle="United States")
+  ylab("Percentage")+
+  ggtitle("Incidents and Population by State", subtitle="United States")+
+  scale_fill_discrete(name="Colors")
+
+##Plot2
+ggplot()+
+  geom_bar(aes(x=hc_us$state, y = (..count..)/pop_states$pop), fill="coral1", alpha=0.7)+
+  coord_flip()+
+  theme_light()+
+  xlab("State")+
+  ylab("")+
+  ggtitle("Incidents by States' Population Sizes", subtitle="United States")+
+  theme(axis.text.x = element_blank(), axis.ticks.x=element_blank())
 ```
+
+The first plot serves as a partial answer to my third research question (Does the distribution of incidents by states follow a similar pattern to the population proportion of each state?).
+I ordered the states in terms of population size, and looking at the pink bars from top to bottom we can see that as the population increases, there is an overall increase on the number of incidents as well.
+But there are still significant differences between the state's population proportion and the percentage of incidents.
+We can see a large difference for New Jersey, where the pink bar goes beyond the blue bar, so there are a lot of incidents when comparing to the population size.
+For Georgia, we also see a large difference, but with the blue bar going beyond the pink one, meaning that there is a low number of bias incidents in proportion to the population.
+
+The second plot gives an overview of the incident frequency by state.
+Here I divided the incident count by the state's population size to gain a more significant result. Without this change, we would basically see states with larger populations standing out, even when though they might not really have a high hate crime rate.
+New Jersey leads the hate crime proportion, followed by DC, and then Massachusetts.
+The lowest rates are for Hawaii, Alabama, Mississippi, Georgia, and Louisiana, respectively.
 
 ```{r}
 #bias_code
@@ -297,6 +464,12 @@ ggplot(hc_us, aes(bias_code))+
   coord_flip()
 ```
 
+As it was for Montgomery County, bias against black people is by far the most common in the country.
+Anti-Jewish also maintains second place, but has a lower frequency in comparison to what we saw for MC, considering the datasets' proportions.
+Anti-Homosexual incidents are similar on local and national levels, and are the third most common.
+For the national scenario, there are more Anti-White and Anti-Other Ethnicity and less Anti-Transgender, Anti-Multi-Racial, Anti-Islamic, and Anti-Asian incidents.
+Both datasets show that discrimination against hispanic people is very common.
+
 ```{r}
 #offense
 
@@ -311,6 +484,8 @@ ggplot(hc_us, aes(offense))+
   ylab("Incidents")+
   ggtitle("Reported Offenses", subtitle="United States")
 ```
+As it was for Montgomery County, vandalism is the most common offense.
+For the US, intimidation and assault have similar frequencies, while intimidation was higher in the MC dataset.
 
 ```{r}
 #victim_type
@@ -327,6 +502,11 @@ ggplot(hc_us%>%filter(!is.na(victim_type)), aes(victim_type))+
   ggtitle("Types of Victims", subtitle="United States")+
   coord_flip()
 ```
+
+Crimes against individuals are extremely high for both Montgomery County and the United States in general.
+Society, Religious Organizations, and the Government were more common victims in MC; for the US they are less frequent than Business/Financial Institutions.
+In this kaggle dataset there were no hate crime reports for Schools or Colleges, while they were common targets locally.
+Since there are 1313 missing values for this variable, I will prioritize its investigation through the DataMontgomery dataset, where all values are known.
 
 ```{r}
 #victim_count
@@ -347,6 +527,12 @@ hc_us%>%
   summarise(Min=min(victim_count, na.rm=TRUE), Q1=quantile(victim_count, 0.25, na.rm=TRUE), Median=median(victim_count, na.rm=TRUE), Q3=quantile(victim_count, 0.75, na.rm=TRUE), Max=max(victim_count, na.rm=TRUE), Mean=mean(victim_count, na.rm=TRUE))
 ```
 
+Looking at the descriptive statistics table, we can see that, as it was for Montgomery County, all of the position measures point to 1. This can also be seen through the boxplot, since we have a line instead of a box: the minimum value and the three quartiles are all overlapping.
+The difference from the local dataset is that the min value was of 0 (I don't understand how there could be a hate crime with no victim), and the max value was of 7. For the national cenario we have a minimum of 1 (makes more sense) and a maximum of 200!
+The hate crime that had 200 victims happened in 2017 in Georgia, but there is no specification about the offense or the bias code, and I couldn't find this incident on the internet.
+Another one of the many outliers is the one with 147 victims, which was a religious intolarence crime of arson in Montana, 1998. The victims were Hutterite (religious group) families. Here is an article on The New York Times about the incident: https://www.nytimes.com/1998/04/05/us/arson-greets-religious-sect-at-a-colony-in-montana.html
+Median and mean estimates: 1 and 1.24, respectively.
+
 ```{r}
 #offender_count
 
@@ -366,6 +552,11 @@ hc_us%>%
   summarise(Min=min(offender_count, na.rm=TRUE), Q1=quantile(offender_count, 0.25, na.rm=TRUE), Median=median(offender_count, na.rm=TRUE), Q3=quantile(offender_count, 0.75, na.rm=TRUE), Max=max(offender_count, na.rm=TRUE), Mean=mean(offender_count, na.rm=TRUE))
 ```
 
+There aren't any missing values reported, but since both the minimum and the first quartile are equal to 0, there seem to be many incidents where there were zero offenders. I think zero in this case can mean that the number of offenders is unknown.
+This variable also contains a lot of outliers.
+One of them happened in California in 1997: 99 offenders intimidated 50 victims with an Anti-Black motivation.
+The estimate for the median is of 1, while for the mean it is of 0.97.
+
 ```{r}
 #juvenile_offenders
 
@@ -376,6 +567,8 @@ freq(hc_us$juvenile_offenders)
 hc_us%>%
   summarise(Min=min(juvenile_offenders, na.rm=TRUE), Q1=quantile(juvenile_offenders, 0.25, na.rm=TRUE), Median=median(juvenile_offenders, na.rm=TRUE), Q3=quantile(juvenile_offenders, 0.75, na.rm=TRUE), Max=max(juvenile_offenders, na.rm=TRUE), Mean=mean(juvenile_offenders, na.rm=TRUE))
 ```
+83.4% of the data is missing for this variable. This is why I didn't include age on any of my research questions.
+For the known data, only 4.1% of the incidents had juvenile offenders.
 
 ```{r}
 #adult_offenders
@@ -387,6 +580,9 @@ freq(hc_us$adult_offenders)
 hc_us%>%
   summarise(Min=min(adult_offenders, na.rm=TRUE), Q1=quantile(adult_offenders, 0.25, na.rm=TRUE), Median=median(adult_offenders, na.rm=TRUE), Q3=quantile(adult_offenders, 0.75, na.rm=TRUE), Max=max(adult_offenders, na.rm=TRUE), Mean=mean(adult_offenders, na.rm=TRUE))
 ```
+There are 84.1% of missing values.
+For the known data, 29.5% of the incidents had adult offenders.
+It is more common for adults to commit hate crimes than teens.
 
 ```{r}
 #offender_race
@@ -404,6 +600,9 @@ ggplot(hc_us%>%filter(!is.na(offender_race)), aes(offender_race))+
   theme(axis.text.x = element_text(angle=10))
 ```
 
+There are 89302 missing values.
+Hate crimes are usually committed by white people, and the second most common offender race is black/ african american.
+
 # Relationships
 
 ## Montgomery County
@@ -414,6 +613,13 @@ ggplot(hc_us%>%filter(!is.na(offender_race)), aes(offender_race))+
 ##Two-Way Table
 table(hc_mc$victim_type, hc_mc$offense)
 ```
+
+The only case of arson was against a religious organization.
+All of the assault crimes were against individuals.
+Intimidation happens mostly against individuals.
+Vandalism on a hate crime context is very common on schools and colleges.
+Society, schools/colleges, the government, and business institutions all suffer mostly from vandalism.
+Individuals and religious organizations suffer mostly from intimidation.
 
 ## United States
 
@@ -427,6 +633,11 @@ ggplot(hc_us, aes(adult_offenders, juvenile_offenders))+
   xlab("Adult Offenders")+
   ylab("Juvenile Offenders")
 ```
+
+I created this visualization because I thought the high frequency of zeros for both age variables was peculiar, so I wanted to take a look at what was happening.
+As we can see, the largest concentration of points is on (0,0), indicating that most crimes had neither juvenile nor adult offenders. Does this mean that there weren't any offenders at all for those incidents? We actually saw many zeros when looking at the offender_count variable, so there is a coherence here. I don't know for sure what this means, but my guess is that there isn't a lot of information about the offenders (maybe it is a privacy thing). I think this is the case because all of the variables related to the offenders, including their race, had either many missing values, many zeros, or both.
+For the remaining incidents, we can see that the most common scenario is of adult offenders present but no juvenile offender present.
+The least common scenario is of both juvenile and adult offenders being present.
 
 ```{r}
 ##offender_race X bias_code
@@ -442,3 +653,7 @@ ggplot(hc_us%>%filter(!is.na(offender_race)), aes(bias_code, fill=offender_race)
   theme(axis.text.x = element_text(angle=45))+
   scale_fill_manual("Offender's Race", values=c("yellow", "orange", "red", "green", "blue", "purple"))
 ```
+
+I recommend that you print this plot using the console (or a script) and then zoom in.
+The most prominent color on the chart is purple, indicating white offenders. We already knew that most hate crimes were committed by white people, but seeing the purple bars spread all over different bias codes shows us that white offenders can be biased against almost any kind of race, nationality, religion, etc.
+Black offenders are usually associated with Anti-White, Anti-Homosexual, Anti-Hispanic, and even Anti-Black bias codes.
