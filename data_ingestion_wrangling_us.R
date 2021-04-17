@@ -143,7 +143,7 @@ for (i in 1:201403){
     bias_codes_vector_1[i]="Anti-Multi-Racial"
   }
   else if (bias_codes_vector_1[i]=="Anti-Lesbian (Female)"){
-    bias_codes_vector_1[i]="Anti-Homosexual"
+    bias_codes_vector_1[i]="Anti-LGBT+"
   }
   else if (bias_codes_vector_1[i]=="Anti-Islamic (Muslim)"){
     bias_codes_vector_1[i]="Anti-Islamic"
@@ -152,10 +152,13 @@ for (i in 1:201403){
     bias_codes_vector_1[i]="Anti-Hispanic"
   }
   else if (bias_codes_vector_1[i]=="Anti-Gay (Male)"){
-    bias_codes_vector_1[i]="Anti-Homosexual"
+    bias_codes_vector_1[i]="Anti-LGBT+"
   }
   else if (bias_codes_vector_1[i]=="Anti-Black or African American"){
     bias_codes_vector_1[i]="Anti-Black"
+  }
+  else if (bias_codes_vector_1[i] %in% c("Anti-Transgender", "Anti-Gender Non-Conforming", "Anti-Lesbian, Gay, Bisexual, or Transgender (Mixed Group)")){
+    bias_codes_vector_1[i]="Anti-LGBT+"
   }
   else if (bias_codes_vector_1[i] %in% other){
     bias_codes_vector_1[i]="Other"

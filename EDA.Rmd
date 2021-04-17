@@ -87,7 +87,7 @@ ggplot(hc_mc, aes(bias_code))+
   coord_flip()
 ```
 
-Anti-Black and Anti-Jewish are the most common bias, with more than triple the count of the third most frequent bias (Anti-Homosexual). Anti-Multi-Racial, Anti-Hispanic, Anti-Islamic, Anti-Asian, Anti-White, and Anti-Transgender are also very common bias codes.
+Anti-Black and Anti-Jewish are the most common bias, with more than double the count of the third most frequent bias (Anti-LGBT+). Anti-Multi-Racial, Anti-Hispanic, Anti-Islamic, Anti-Asian, Anti-White, and Anti-Transgender are also very common bias codes.
 
 ```{r}
 #offense
@@ -343,6 +343,7 @@ ggplot(hc_us%>%filter(bias_code=='Anti-Black'), aes(year))+
 ```
 Anti-Black incidents have been decreasing since 1995, which was the year of the "Million Man March".
 The decrease rate gets even higher after Obama's election in 2008.
+Numbers start to lightly increase again in 2013 which is when the "Black Lives Matter Movement" started.
 
 ```{r}
 #Importing dataset with states' populations in proportion to the country's population
@@ -465,9 +466,9 @@ ggplot(hc_us, aes(bias_code))+
 ```
 
 As it was for Montgomery County, bias against black people is by far the most common in the country.
-Anti-Jewish also maintains second place, but has a lower frequency in comparison to what we saw for MC, considering the datasets' proportions.
-Anti-Homosexual incidents are similar on local and national levels, and are the third most common.
-For the national scenario, there are more Anti-White and Anti-Other Ethnicity and less Anti-Transgender, Anti-Multi-Racial, Anti-Islamic, and Anti-Asian incidents.
+Anti-Jewish has a lower frequency in comparison to what we saw for MC, considering the datasets' proportions. This is probably due to the proportion of jews, which is less than 3% for the United States, but around 10% for Montgomery County.
+Anti-LGBT+ is the second most common bias code (for MC it was the third).
+For the national scenario, there are more Anti-White and Anti-Other Ethnicity and less Anti-Multi-Racial, Anti-Islamic, and Anti-Asian incidents.
 Both datasets show that discrimination against hispanic people is very common.
 
 ```{r}
@@ -656,4 +657,4 @@ ggplot(hc_us%>%filter(!is.na(offender_race)), aes(bias_code, fill=offender_race)
 
 I recommend that you print this plot using the console (or a script) and then zoom in.
 The most prominent color on the chart is purple, indicating white offenders. We already knew that most hate crimes were committed by white people, but seeing the purple bars spread all over different bias codes shows us that white offenders can be biased against almost any kind of race, nationality, religion, etc.
-Black offenders are usually associated with Anti-White, Anti-Homosexual, Anti-Hispanic, and even Anti-Black bias codes.
+Black offenders are usually associated with Anti-White, Anti-LGBT+, Anti-Hispanic, and even Anti-Black bias codes.

@@ -59,6 +59,7 @@ hc_mc_comp <- hc_mc_comp%>%
          suspects_46_55_years_old, suspects_55_years_old)
 
 #Matching bias codes
+##US
 bias_codes_vector <- hc_us_comp$bias_code
 other <- c("Anti-American Indian or Alaska Native;Anti-Asian",
            "Anti-American Indian or Alaska Native;Anti-Black or African American",
@@ -163,7 +164,7 @@ for (i in 1:201403){
     bias_codes_vector[i]="Anti-Multi-Racial"
   }
   else if (bias_codes_vector[i]=="Anti-Lesbian (Female)"){
-    bias_codes_vector[i]="Anti-Homosexual"
+    bias_codes_vector[i]="Anti-LGBT+"
   }
   else if (bias_codes_vector[i]=="Anti-Islamic (Muslim)"){
     bias_codes_vector[i]="Anti-Islamic"
@@ -172,16 +173,29 @@ for (i in 1:201403){
     bias_codes_vector[i]="Anti-Hispanic"
   }
   else if (bias_codes_vector[i]=="Anti-Gay (Male)"){
-    bias_codes_vector[i]="Anti-Homosexual"
+    bias_codes_vector[i]="Anti-LGBT+"
   }
   else if (bias_codes_vector[i]=="Anti-Black or African American"){
     bias_codes_vector[i]="Anti-Black"
+  }
+  else if (bias_codes_vector[i] %in% c("Anti-Transgender", "Anti-Gender Non-Conforming", "Anti-Lesbian, Gay, Bisexual, or Transgender (Mixed Group)")){
+    bias_codes_vector[i]="Anti-LGBT+"
   }
   else if (bias_codes_vector[i] %in% other){
     bias_codes_vector[i]="Other"
   }
 }
 hc_us_comp$bias_code <- bias_codes_vector
+##MC
+bias_code_vector_3 <- hc_mc_comp$bias_code
+for (i in 1:length(bias_code_vector_3)){
+  if (is.na(bias_code_vector_3[i])){
+    next
+  }
+  else if (bias_code_vector_3[i] %in% c("Anti-Transgender", "Anti-Homosexual", "Anti-Gender Non-Conforming", "Anti-Male Homosexual"))
+    bias_code_vector_3[i] = "Anti-LGBT+"
+}
+hc_mc_comp$bias_code <- bias_code_vector_3
 
 #Matching offense
 ##US
@@ -203,7 +217,7 @@ for (i in 1:201403){
 hc_us_comp$offense <- offense_vector
 ##MC
 offense_vector_1 <- hc_mc_comp$offense
-for (i in 1:564){
+for (i in 1:length(offense_vector_1)){
   if (offense_vector_1[i] %in% c("Physical Intimidation/Simple Assault", "Verbal Intimidation/Simple Assault", "Written Intimidation/Simple Assault")){
     offense_vector_1[i] = "Intimidation"
   }
@@ -258,28 +272,28 @@ hc_mc_comp$suspects_46_55_years_old <- as.integer(hc_mc_comp$suspects_46_55_year
 hc_mc_comp$suspects_55_years_old <- as.integer(hc_mc_comp$suspects_55_years_old)
 ##Converting NA's into 0's for the MC dataset
 suspects_18_35_vector <- hc_mc_comp$suspects_18_35_years_old
-for (i in 1:564){
+for (i in 1:length(suspects_18_35_vector)){
   if (is.na(suspects_18_35_vector[i])){
     suspects_18_35_vector[i]=0
   }
 }
 hc_mc_comp$suspects_18_35_years_old <- suspects_18_35_vector
 suspects_36_45_vector <- hc_mc_comp$suspects_36_45_years_old
-for (i in 1:564){
+for (i in 1:length(suspects_36_45_vector)){
   if (is.na(suspects_36_45_vector[i])){
     suspects_36_45_vector[i]=0
   }
 }
 hc_mc_comp$suspects_36_45_years_old <- suspects_36_45_vector
 suspects_46_55_vector <- hc_mc_comp$suspects_46_55_years_old
-for (i in 1:564){
+for (i in 1:length(suspects_46_55_vector)){
   if (is.na(suspects_46_55_vector[i])){
     suspects_46_55_vector[i]=0
   }
 }
 hc_mc_comp$suspects_46_55_years_old <- suspects_46_55_vector
 suspects_55_vector <- hc_mc_comp$suspects_55_years_old
-for (i in 1:564){
+for (i in 1:length(suspects_55_vector)){
   if (is.na(suspects_55_vector[i])){
     suspects_55_vector[i]=0
   }
@@ -295,7 +309,7 @@ hc_mc_comp <- hc_mc_comp%>%
   rename(juvenile_suspects = suspects_less_than_18_years)
 ##Converting 0's back to NA's
 adult_suspects_vector <- hc_mc_comp$adult_suspects
-for (i in 1:564){
+for (i in 1:length(adult_suspects_vector)){
   if (adult_suspects_vector[i]==0){
     adult_suspects_vector[i]=NA
   }
@@ -317,3 +331,7 @@ hc_mc_comp$adult_suspects <- as.integer(hc_mc_comp$adult_suspects)
 hc_us_comp$victim_count <- as.integer(hc_us_comp$victim_count)
 hc_us_comp$suspect_count <- as.integer(hc_us_comp$suspect_count)
 hc_us_comp$id <- as.character(hc_us_comp$id)
+
+#Saving clean data
+write_xlsx(hc_mc_comp, "hc_mc_comp.xlsx")
+write_xlsx(hc_us_comp, "hc_us_comp.xlsx")

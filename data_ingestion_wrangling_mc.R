@@ -36,7 +36,7 @@ hc_mc$suspects_55_years_old <- as.integer(hc_mc$suspects_55_years_old)
 
 #Changing offense labels
 offense_vector_2 <- hc_mc$offense
-for (i in 1:564){
+for (i in 1:583){
   if (offense_vector_2[i] %in% c("Physical Intimidation/Simple Assault", "Verbal Intimidation/Simple Assault", "Written Intimidation/Simple Assault")){
     offense_vector_2[i] = "Intimidation"
   }
@@ -51,7 +51,7 @@ hc_mc$offense <- offense_vector_2
 
 #Changing case_status labels
 status_vector <- hc_mc$case_status
-for (i in 1:564){
+for (i in 1:length(status_vector)){
   if (is.na(status_vector[i])){
     next
   }
@@ -63,6 +63,17 @@ for (i in 1:564){
   }
 }
 hc_mc$case_status <- status_vector
+
+#Changing bias codes
+bias_code_vector_2 <- hc_mc$bias_code
+for (i in 1:length(bias_code_vector_2)){
+  if (is.na(bias_code_vector_2[i])){
+    next
+  }
+  else if (bias_code_vector_2[i] %in% c("Anti-Transgender", "Anti-Homosexual", "Anti-Gender Non-Conforming", "Anti-Male Homosexual"))
+    bias_code_vector_2[i] = "Anti-LGBT+"
+}
+hc_mc$bias_code <- bias_code_vector_2
 
 #Saving clean data as xlsx
 write_xlsx(hc_mc, "hc_mc.xlsx")
