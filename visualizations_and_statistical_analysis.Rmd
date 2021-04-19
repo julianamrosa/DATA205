@@ -1,0 +1,220 @@
+---
+title: "Data Visualization and Statistical Analysis"
+author: "Juliana Rosa"
+date: "19/04/2021"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#Dataframes created on the data_ingestion_wrangling_mc, and data_ingestion_wrangling_us scripts will be used here.
+```
+
+```{r}
+#Loading packages
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(questionr)
+library(readxl)
+```
+
+```{r}
+#Importing clean mc data (previously created)
+hc_mc <- read_excel("hc_mc.xlsx")
+```
+
+```{r}
+#Assigning appropriate data types
+hc_mc$victim_count <- as.integer(hc_mc$victim_count)
+hc_mc$suspect_count <- as.integer(hc_mc$suspect_count)
+hc_mc$suspects_less_than_18_years <- as.integer(hc_mc$suspects_less_than_18_years)
+hc_mc$suspects_18_35_years_old <- as.integer(hc_mc$suspects_18_35_years_old)
+hc_mc$suspects_36_45_years_old <- as.integer(hc_mc$suspects_36_45_years_old)
+hc_mc$suspects_46_55_years_old <- as.integer(hc_mc$suspects_46_55_years_old)
+hc_mc$suspects_55_years_old <- as.integer(hc_mc$suspects_55_years_old)
+```
+
+```{r}
+#Importing clean us data (previously created)
+hc_us <- read_excel("hc_us.xlsx")
+```
+
+```{r}
+#Assigning appropriate data types
+hc_us$victim_count <- as.integer(hc_us$victim_count)
+hc_us$offender_count <- as.integer(hc_us$offender_count)
+hc_us$adult_offenders <- as.integer(hc_us$adult_offenders)
+hc_us$juvenile_offenders <- as.integer(hc_us$juvenile_offenders)
+```
+
+#Question 1: How are the variables “bias code”, “offense”, and “victim type” related?
+
+```{r}
+#bias_code vs offense
+
+##Standard two-way table
+table(hc_mc$bias_code, hc_mc$offense)
+
+##Frequencies divided by the "row total"
+round(prop.table(table(hc_mc$bias_code, hc_mc$offense), margin=1), digits=5)*100
+
+##"Column totals" divided by "general total"
+round(colSums(table(hc_mc$bias_code, hc_mc$offense)), digits=5)*100/sum(rowSums(table(hc_mc$bias_code, hc_mc$offense)))
+
+##Independency Test
+chisq.test(hc_mc$bias_code, hc_mc$offense)
+```
+
+```{r}
+#bias_code vs victim_type
+
+##Standard two-way table
+table(hc_mc$bias_code, hc_mc$victim_type)
+
+##Frequencies divided by the "row total"
+round(prop.table(table(hc_mc$bias_code, hc_mc$victim_type), margin=1), digits=5)*100
+
+##"Column totals" divided by "general total"
+round(colSums(table(hc_mc$bias_code, hc_mc$victim_type)), digits=5)*100/sum(rowSums(table(hc_mc$bias_code, hc_mc$victim_type)))
+
+##Independency Test
+chisq.test(hc_mc$bias_code, hc_mc$victim_type)
+```
+
+```{r}
+#offense vs victim_type
+
+##Standard two-way table
+table(hc_mc$offense, hc_mc$victim_type)
+
+##Frequencies divided by the "row total"
+round(prop.table(table(hc_mc$offense, hc_mc$victim_type), margin=1), digits=5)*100
+
+##"Column totals" divided by "general total"
+round(colSums(table(hc_mc$offense, hc_mc$victim_type)), digits=5)*100/sum(rowSums(table(hc_mc$offense, hc_mc$victim_type)))
+
+##Independency Test
+chisq.test(hc_mc$offense, hc_mc$victim_type)
+```
+
+#Question 2: Is there an association between victim and suspect count?
+
+```{r}
+#Scatterplot
+ggplot(hc_mc, aes(suspect_count, victim_count))+
+  geom_jitter(alpha=0.5, color="brown4")+
+  geom_smooth(method=lm, color="brown4", se=FALSE)+
+  theme_light()+
+  labs(x="Suspect Count", y="Victim Count")+
+  ggtitle("Relationship Between Suspect and Victim Count", subtitle="Montgomery County")
+
+#linear regression model
+mod <- lm(victim_count~suspect_count, data=hc_mc)
+coef(mod)
+anova(mod)
+```
+
+#Question 3: Does the distribution of incidents by state follow a similar pattern to the population proportion of each state?
+
+```{r}
+#Importing dataset with states' populations in proportion to the country's population
+#Source of data: https://www.infoplease.com/us/states/state-population-by-rank
+#The data were copied from the link above and pasted into excel
+#Before importing it into R, just change "DC" to "District of Columbia" and save the file as pop_states.xlsx
+pop_states <- read_excel("population_states.xlsx")
+
+#Renaming columns
+pop_states <- pop_states%>%
+  rename(state='State', pop_prop='Percent of Total', pop=Population)
+
+#Ordering states by population proportion
+pop_states$state <- factor(pop_states$state, levels=c("California", "Texas", "Florida",
+                                                      "New York", "Illinois",
+                                                      "Pennsylvania", "Ohio", "Georgia",
+                                                      "North Carolina", "Michigan",
+                                                      "New Jersey", "Virginia",
+                                                      "Washington", "Arizona",
+                                                      "Massachusetts", "Tennessee",
+                                                      "Indiana", "Missouri", "Maryland",
+                                                      "Wisconsin", "Colorado",
+                                                      "Minnesota", "South Carolina",
+                                                      "Alabama", "Louisiana", "Kentucky",
+                                                      "Oregon", "Oklahoma",
+                                                      "Connecticut", "Utah", "Iowa",
+                                                      "Nevada", "Arkansas",
+                                                      "Mississippi", "Kansas",
+                                                      "New Mexico", "Nebraska",
+                                                      "West Virginia", "Idaho", "Hawaii",
+                                                      "New Hampshire", "Maine",
+                                                      "Montana", "Rhode Island",
+                                                      "Delaware", "South Dakota",
+                                                      "North Dakota", "Alaska",
+                                                      "District of Columbia", "Vermont",
+                                                      "Wyoming"), ordered=TRUE)
+```
+
+```{r}
+##Ordering states by population
+hc_us$state <- factor(hc_us$state, levels=c("California", "Texas", "Florida",
+                                                       "New York", "Illinois",
+                                                       "Pennsylvania", "Ohio", "Georgia",
+                                                       "North Carolina", "Michigan",
+                                                       "New Jersey", "Virginia",
+                                                       "Washington", "Arizona",
+                                                       "Massachusetts", "Tennessee",
+                                                       "Indiana", "Missouri", "Maryland",
+                                                       "Wisconsin", "Colorado",
+                                                       "Minnesota", "South Carolina",
+                                                       "Alabama", "Louisiana", "Kentucky",
+                                                       "Oregon", "Oklahoma",
+                                                       "Connecticut", "Utah", "Iowa",
+                                                       "Nevada", "Arkansas",
+                                                       "Mississippi", "Kansas",
+                                                       "New Mexico", "Nebraska",
+                                                       "West Virginia", "Idaho", "Hawaii",
+                                                       "New Hampshire", "Maine",
+                                                       "Montana", "Rhode Island",
+                                                       "Delaware", "South Dakota",
+                                                       "North Dakota", "Alaska",
+                                                       "District of Columbia", "Vermont",
+                                                       "Wyoming"), ordered=TRUE)
+
+#Goodness of Fit Test
+chisq.test(table(hc_us$state), p=pop_states$pop_prop, rescale.p=TRUE)
+
+##Barplot
+ggplot()+
+  geom_bar(aes(x=hc_us$state, y = (..count..)/sum(..count..), fill="Incidents"), alpha=0.5)+
+  geom_bar(aes(x=pop_states$state, y=pop_states$pop_prop, fill="Population"), stat='identity', alpha=0.5)+
+  coord_flip()+
+  scale_y_continuous(labels=scales::percent)+
+  theme_light()+
+  xlab("State")+
+  ylab("Percentage")+
+  ggtitle("Incidents and Population by State", subtitle="United States")+
+  scale_fill_discrete(name="Colors")
+```
+
+#Question 4: Does the offender’s race tell us something about the bias code of the incident?
+
+```{r}
+#Colored Barplot
+ggplot(hc_us%>%filter(!is.na(offender_race)), aes(bias_code, fill=offender_race))+
+  geom_bar(position="dodge")+
+  coord_flip()+
+  theme_light()+
+  ggtitle("Association between Bias and 
+          Offender's Race")+
+  xlab("Bias Code")+
+  ylab("Incidents")+
+  theme(axis.text.x = element_text(angle=45))+
+  scale_fill_manual("Offender's Race", values=c("yellow", "orange", "red", "green", "blue", "purple"))
+
+#Independency Test
+chisq.test(hc_us$offender_race, hc_us$bias_code)
+```
+
