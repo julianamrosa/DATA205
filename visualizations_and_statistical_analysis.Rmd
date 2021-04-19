@@ -124,7 +124,8 @@ anova(mod)
 #Importing dataset with states' populations in proportion to the country's population
 #Source of data: https://www.infoplease.com/us/states/state-population-by-rank
 #The data were copied from the link above and pasted into excel
-#Before importing it into R, just change "DC" to "District of Columbia" and save the file as pop_states.xlsx
+#Before importing it into R, I just changed "DC" to "District of Columbia" and saved the file as pop_states.xlsx
+#The excel file is available on my repo
 pop_states <- read_excel("population_states.xlsx")
 
 #Renaming columns
