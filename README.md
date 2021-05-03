@@ -1,5 +1,4 @@
-# DATA205
-Bias Incidents
+# Bias Incidents
 
 This is a project for the Montgomery College Data 205 (Capstone in Data Science) course. The chosen topic is "Bias Incidents" and the following datasets were used:
 - Bias Incidents dataset from dataMontgomery (https://data.montgomerycountymd.gov/Public-Safety/MCPD-Bias-Incidents/7bhj-887p);
