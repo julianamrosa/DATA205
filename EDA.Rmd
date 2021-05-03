@@ -1,5 +1,7 @@
 ---
 title: "Exploratory Data Analysis"
+author: "Juliana Rosa"
+date: "08/03/2021"
 output: word_document
 ---
 
@@ -96,9 +98,11 @@ Anti-Black and Anti-Jewish are the most common bias, with more than double the c
 sum(is.na(hc_mc$offense))
 
 ##Plot
-ggplot(hc_mc, aes(offense))+
-  geom_bar(fill="darkgreen")+
+ggplot(hc_mc%>%filter(!is.na(offense)), aes(offense, fill=offense))+
+  geom_bar()+
+  scale_fill_brewer(palette = "Dark2")+
   theme_light()+
+  theme(legend.position = "none")+
   xlab("Offense")+
   ylab("Incidents")+
   ggtitle("Reported Offenses", subtitle="Montgomery County")
@@ -113,7 +117,7 @@ It looks like hate and bias are commonly manifested through vandalism, intimidat
 freq(hc_mc$case_status, sort="dec")
 ```
 
-There are 174 missing values for the case status variable, which corresponds to approximately 30% of the data. Since almost 70% of the data is still available, there probably won't be a problem in this variable's analysis.
+There are 179 missing values for the case status variable, which corresponds to approximately 30% of the data. Since almost 70% of the data is still available, there probably won't be a problem in this variable's analysis.
 Looking only at the known values, we can see that more than half the cases are still open, and only 28.4% of them are actually closed.
 
 ```{r}
@@ -300,7 +304,7 @@ sum(is.na(hc_us$year))
 
 ##Plot
 ggplot(hc_us, aes(year))+
-  geom_freqpoly(color="darkgreen", bins=28)+
+  geom_freqpoly(color="chartreuse3", bins=28)+
   theme_light()+
   xlab("Year")+
   ylab("Incidents")+

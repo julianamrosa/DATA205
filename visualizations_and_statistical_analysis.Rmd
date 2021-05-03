@@ -20,11 +20,15 @@ library(ggplot2)
 library(lubridate)
 library(questionr)
 library(readxl)
+library(vcd)
+library(plotly)
+library(gridExtra)
 ```
 
 ```{r}
 #Importing clean mc data (previously created)
 hc_mc <- read_excel("hc_mc.xlsx")
+hc_mc_comp <- read_excel("hc_mc_comp.xlsx")
 ```
 
 ```{r}
@@ -41,6 +45,7 @@ hc_mc$suspects_55_years_old <- as.integer(hc_mc$suspects_55_years_old)
 ```{r}
 #Importing clean us data (previously created)
 hc_us <- read_excel("hc_us.xlsx")
+hc_us_comp <- read_excel("hc_us_comp.xlsx")
 ```
 
 ```{r}
@@ -65,9 +70,10 @@ round(prop.table(table(hc_mc$bias_code, hc_mc$offense), margin=1), digits=5)*100
 ##"Column totals" divided by "general total"
 round(colSums(table(hc_mc$bias_code, hc_mc$offense)), digits=5)*100/sum(rowSums(table(hc_mc$bias_code, hc_mc$offense)))
 
-##Independency Test
-chisq.test(hc_mc$bias_code, hc_mc$offense)
+##Independency Test and Measures of Association
+summary(assocstats(table(hc_mc$bias_code, hc_mc$offense)))
 ```
+
 
 ```{r}
 #bias_code vs victim_type
@@ -81,9 +87,10 @@ round(prop.table(table(hc_mc$bias_code, hc_mc$victim_type), margin=1), digits=5)
 ##"Column totals" divided by "general total"
 round(colSums(table(hc_mc$bias_code, hc_mc$victim_type)), digits=5)*100/sum(rowSums(table(hc_mc$bias_code, hc_mc$victim_type)))
 
-##Independency Test
-chisq.test(hc_mc$bias_code, hc_mc$victim_type)
+##Independency Test and Measures of Association
+summary(assocstats(table(hc_mc$bias_code, hc_mc$victim_type)))
 ```
+
 
 ```{r}
 #offense vs victim_type
@@ -97,26 +104,56 @@ round(prop.table(table(hc_mc$offense, hc_mc$victim_type), margin=1), digits=5)*1
 ##"Column totals" divided by "general total"
 round(colSums(table(hc_mc$offense, hc_mc$victim_type)), digits=5)*100/sum(rowSums(table(hc_mc$offense, hc_mc$victim_type)))
 
-##Independency Test
-chisq.test(hc_mc$offense, hc_mc$victim_type)
+##Independency Test and Measures of Association
+summary(assocstats(table(hc_mc$offense, hc_mc$victim_type)))
 ```
+
 
 #Question 2: Is there an association between victim and suspect count?
 
+##MC
+
 ```{r}
 #Scatterplot
-ggplot(hc_mc, aes(suspect_count, victim_count))+
+ggplot(hc_mc_comp, aes(suspect_count, victim_count))+
   geom_jitter(alpha=0.5, color="brown4")+
   geom_smooth(method=lm, color="brown4", se=FALSE)+
   theme_light()+
   labs(x="Suspect Count", y="Victim Count")+
   ggtitle("Relationship Between Suspect and Victim Count", subtitle="Montgomery County")
 
+#Testing linear relationship
+cor.test(hc_mc_comp$suspect_count, hc_mc_comp$victim_count, method="spearman")
+cor.test(hc_mc_comp$suspect_count, hc_mc_comp$victim_count, method="pearson")
+
 #linear regression model
-mod <- lm(victim_count~suspect_count, data=hc_mc)
+mod <- lm(victim_count~suspect_count, data=hc_mc_comp)
 coef(mod)
 anova(mod)
 ```
+
+##US
+
+```{r}
+#Scatterplot
+ggplot(hc_us_comp%>%filter(victim_count!=200), aes(suspect_count, victim_count))+
+  geom_jitter(alpha=0.5, color="brown4")+
+  geom_smooth(method=lm, color="brown4", se=FALSE)+
+  theme_light()+
+  labs(x="Offender Count", y="Victim Count")+
+  ggtitle("Relationship Between Offender and Victim Count", subtitle="United States")+
+  scale_x_continuous(breaks=c(0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30))
+
+#Testing linear relationship
+cor.test(hc_us_comp$suspect_count, hc_us_comp$victim_count, method="spearman")
+cor.test(hc_us_comp$suspect_count, hc_us_comp$victim_count, method="pearson")
+
+#linear regression model
+mod1 <- lm(victim_count~suspect_count, data=hc_us_comp)
+coef(mod1)
+anova(mod1)
+```
+
 
 #Question 3: Does the distribution of incidents by state follow a similar pattern to the population proportion of each state?
 
@@ -215,7 +252,163 @@ ggplot(hc_us%>%filter(!is.na(offender_race)), aes(bias_code, fill=offender_race)
   theme(axis.text.x = element_text(angle=45))+
   scale_fill_manual("Offender's Race", values=c("yellow", "orange", "red", "green", "blue", "purple"))
 
-#Independency Test
-chisq.test(hc_us$offender_race, hc_us$bias_code)
+##Independency Test and Measures of Association
+summary(assocstats(table(hc_us$offender_race, hc_us$bias_code)))
+```
+
+#Question 9: How have bias incidents changed over the years in Montgomery County? How is that different from the national scenario?
+
+```{r}
+#bias code over the years
+
+##MC
+ggplot(hc_mc_comp, aes(bias_code, fill=as.character(year)))+
+  geom_bar(alpha=0.8)+
+  coord_flip()+
+  facet_wrap(~year)+
+  theme_light()+
+  theme(legend.position = "none")+
+  labs(x="Bias Code", y="Incidents")+
+  ggtitle("Bias Codes Over the Years", subtitle="Montgomery County")
+
+##US
+ggplot(hc_us_comp, aes(bias_code, fill=as.character(year)))+
+  geom_bar(alpha=0.8)+
+  coord_flip()+
+  facet_wrap(~year)+
+  theme_light()+
+  theme(legend.position = "none")+
+  labs(x="Bias Code", y="Incidents")+
+  ggtitle("Bias Codes Over the Years", subtitle="United States")
+```
+
+```{r}
+#offense over the years
+
+##MC
+ggplot(hc_mc_comp, aes(offense, fill=as.character(year)))+
+  geom_bar(alpha=0.8)+
+  facet_wrap(~year)+
+  theme_light()+
+  theme(legend.position = "none", axis.text.x = element_text(angle = 30))+
+  labs(x="Offense", y="Incidents")+
+  ggtitle("Offenses Over the Years", subtitle="Montgomery County")+
+  scale_fill_brewer(palette = "Set1")
+
+##US
+ggplot(hc_us_comp, aes(offense, fill=as.character(year)))+
+  geom_bar(alpha=0.8)+
+  facet_wrap(~year)+
+  theme_light()+
+  theme(legend.position = "none", axis.text.x = element_text(angle = 30))+
+  labs(x="Offense", y="Incidents")+
+  ggtitle("Offenses Over the Years", subtitle="United States")+
+  scale_fill_brewer(palette = "Set1")
+```
+
+```{r}
+#victim type over the years
+
+##MC
+ggplot(hc_mc_comp, aes(victim_type, fill=as.character(year)))+
+  geom_bar(alpha=0.8)+
+  coord_flip()+
+  facet_wrap(~year)+
+  theme_light()+
+  theme(legend.position = "none")+
+  labs(x="Victim Type", y="Incidents")+
+  ggtitle("Types of Victims Over the Years", subtitle="Montgomery County")+
+  scale_fill_brewer(palette = "Dark2")
+
+##US
+ggplot(hc_us_comp, aes(victim_type, fill=as.character(year)))+
+  geom_bar(alpha=0.8)+
+  coord_flip()+
+  facet_wrap(~year)+
+  theme_light()+
+  theme(legend.position = "none")+
+  labs(x="Victim Type", y="Incidents")+
+  ggtitle("Types of Victims Over the Years", subtitle="United States")+
+  scale_fill_brewer(palette = "Dark2")
+```
+
+
+```{r}
+#case status over the years for mc
+hc_mc%>%
+  plot_ly(x=~jitter(suspect_count), y=~jitter(victim_count), color=~case_status)%>%
+  layout(title = "Case Status Over the Years",
+         xaxis = list(title = "Suspect Count"), yaxis = list(title = "Victim Count"))%>%
+  add_markers(frame=~year(incident_date), colors = c("red", "blue", "yellow"))%>%
+  animation_opts(frame=2500, transition=2000)%>%
+  animation_slider(currentvalue=list(prefix=NULL))
+```
+
+
+
+#Question 10: Is there a pattern on the frequency of incidents over the months?
+
+```{r}
+#Month
+
+p1 <- ggplot(hc_mc%>%filter(year(incident_date)%in%c(2016, 2017)))+
+  geom_freqpoly(bins=12, aes(month(incident_date),
+                             color=as.character(year(incident_date))), size=1)+
+  theme_light()+
+  scale_color_manual(values=c("darkred", "darkblue"))+
+  ylim(0, 20)+
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45))+
+  geom_text(aes(13, 13, label="2016"), color="darkred")+
+  geom_text(aes(11.5, 7.5, label="2017"), color="darkblue")+
+  labs(x="Month", y="Incidents")+
+  ggtitle("Bias Incidents Over Time")+
+  scale_x_continuous(breaks=c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12),
+                     labels=c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"))
+
+
+p2 <- ggplot(hc_mc%>%filter(year(incident_date)%in%c(2018, 2019)))+
+  geom_freqpoly(bins=12, aes(month(incident_date),
+                             color=as.character(year(incident_date))), size=1)+
+  theme_light()+
+  scale_color_manual(values=c("darkgoldenrod2", "purple"), name="Year")+
+  ylim(0, 20)+
+  theme(legend.position = "none", axis.text.y = element_blank(), axis.ticks.y = element_blank(), axis.text.x = element_text(angle = 45))+
+  geom_text(aes(12, 11, label="2018"), color="darkgoldenrod2")+
+  geom_text(aes(11, 7, label="2019"), color="purple")+
+  labs(x="Month", y="")+
+  ggtitle("")+
+  scale_x_continuous(breaks=c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12),
+                     labels=c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"))
+
+
+p3 <- ggplot(hc_mc%>%filter(year(incident_date)%in%c(2020, 2021)))+
+  geom_freqpoly(bins=12, aes(month(incident_date),
+                             color=as.character(year(incident_date))), size=1)+
+  theme_light()+
+  scale_color_manual(values=c("chartreuse4", "darkorange2"), name="Year")+
+  ylim(0, 20)+
+  theme(legend.position = "none", axis.text.y = element_blank(), axis.ticks.y = element_blank(), axis.text.x = element_text(angle = 45))+
+  geom_text(aes(12, 11, label="2020"), color="chartreuse4")+
+  geom_text(aes(11, 1, label="2021"), color="darkorange2")+
+  labs(x="Month", y="")+
+  ggtitle("")+
+  scale_x_continuous(breaks=c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12),
+                     labels=c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"))
+
+
+grid.arrange(p1, p2, p3, nrow = 1)
+```
+
+#Recommendations
+
+```{r}
+ggplot(hc_mc%>%filter(!is.na(suspect_count)), aes(suspect_count, fill=offense))+
+  geom_bar()+
+  facet_grid(~offense)+
+  scale_fill_brewer(palette = "Dark2")+
+  theme_light()+
+  labs(x="Suspect Count", y="Incidents")+
+  theme(legend.position = "none")+
+  ggtitle("Number of Suspsects for Different Offenses", subtitle="Montgomery County")
 ```
 
