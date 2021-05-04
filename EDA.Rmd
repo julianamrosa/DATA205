@@ -79,8 +79,12 @@ There it is, our 2020 spike on bias incidents. Asians have been even more discri
 ##NA's
 sum(is.na(hc_mc$bias_code))
 
+##Arranging bars in descending order
+hc_mc1 <- hc_mc
+hc_mc1$bias_code <- factor(hc_mc1$bias_code, levels=c("Anti-Black", "Anti-Jewish", "Anti-LGBT+", "Anti-Multi-Racial", "Anti-Hispanic", "Anti-Asian", "Anti-Islamic", "Anti-White", "Anti-Other Ethnicity", "Anti-Catholic", "Anti-Other Religion", "Anti-Multi-Religious Group", "Anti-Arab", "Anti-Other Christian"), ordered=TRUE)
+
 ##Plot
-ggplot(hc_mc, aes(bias_code))+
+ggplot(hc_mc1, aes(bias_code))+
   geom_bar(fill="darkblue")+
   theme_light()+
   xlab("Bias")+
@@ -97,8 +101,11 @@ Anti-Black and Anti-Jewish are the most common bias, with more than double the c
 ##NA's
 sum(is.na(hc_mc$offense))
 
+##Arranging bars in descending order
+hc_mc1$offense <- factor(hc_mc1$offense, levels=c("Vandalism", "Intimidation", "Assault", "Other", "Arson"), ordered=TRUE)
+
 ##Plot
-ggplot(hc_mc%>%filter(!is.na(offense)), aes(offense, fill=offense))+
+ggplot(hc_mc1%>%filter(!is.na(offense)), aes(offense, fill=offense))+
   geom_bar()+
   scale_fill_brewer(palette = "Dark2")+
   theme_light()+
@@ -459,8 +466,12 @@ The lowest rates are for Hawaii, Alabama, Mississippi, Georgia, and Louisiana, r
 ##NA's
 sum(is.na(hc_us$bias_code))
 
+#Reordering bars
+hc_us1 <- hc_us
+hc_us1$bias_code <- factor(hc_us1$bias_code, levels=c("Anti-Black", "Anti-Jewish", "Anti-LGBT+", "Anti-Multi-Racial", "Anti-Hispanic", "Anti-Asian", "Anti-Islamic", "Anti-White", "Anti-Other Ethnicity", "Anti-Catholic", "Anti-Other Religion", "Anti-Multi-Religious Group", "Anti-Arab", "Anti-Other Christian", "Anti-American Indian or Alaska Native", "Other"), ordered=TRUE)
+
 ##Plot
-ggplot(hc_us, aes(bias_code))+
+ggplot(hc_us1, aes(bias_code))+
   geom_bar(fill="darkblue")+
   theme_light()+
   xlab("Bias")+

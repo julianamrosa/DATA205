@@ -233,7 +233,7 @@ ggplot()+
   theme_light()+
   xlab("State")+
   ylab("Percentage")+
-  ggtitle("Incidents and Population by State", subtitle="United States")+
+  ggtitle("Incidents and Population by State", subtitle="United States- from 1991 to 2018")+
   scale_fill_discrete(name="Colors")
 ```
 
@@ -262,7 +262,11 @@ summary(assocstats(table(hc_us$offender_race, hc_us$bias_code)))
 #bias code over the years
 
 ##MC
-ggplot(hc_mc_comp, aes(bias_code, fill=as.character(year)))+
+
+hc_mc_comp1 <- hc_mc_comp
+hc_mc_comp1$bias_code <- factor(hc_mc_comp1$bias_code, levels=c("Anti-Black", "Anti-Jewish", "Anti-LGBT+", "Anti-Multi-Racial", "Anti-Hispanic", "Anti-Asian", "Anti-Islamic", "Anti-White", "Anti-Other Ethnicity", "Anti-Catholic", "Anti-Other Religion", "Anti-Multi-Religious Group", "Anti-Arab", "Anti-Other Christian"), ordered=TRUE)
+
+ggplot(hc_mc_comp1, aes(bias_code, fill=as.character(year)))+
   geom_bar(alpha=0.8)+
   coord_flip()+
   facet_wrap(~year)+
@@ -272,7 +276,11 @@ ggplot(hc_mc_comp, aes(bias_code, fill=as.character(year)))+
   ggtitle("Bias Codes Over the Years", subtitle="Montgomery County")
 
 ##US
-ggplot(hc_us_comp, aes(bias_code, fill=as.character(year)))+
+
+hc_us_comp1 <- hc_us_comp
+hc_us_comp1$bias_code <- factor(hc_us_comp1$bias_code, levels=c("Anti-Black", "Anti-Jewish", "Anti-LGBT+", "Anti-Multi-Racial", "Anti-Hispanic", "Anti-Asian", "Anti-Islamic", "Anti-White", "Anti-Other Ethnicity", "Anti-Catholic", "Anti-Other Religion", "Anti-Multi-Religious Group", "Anti-Arab", "Anti-Other Christian", "Anti-American Indian or Alaska Native", "Other"), ordered=TRUE)
+
+ggplot(hc_us_comp1, aes(bias_code, fill=as.character(year)))+
   geom_bar(alpha=0.8)+
   coord_flip()+
   facet_wrap(~year)+
@@ -286,7 +294,10 @@ ggplot(hc_us_comp, aes(bias_code, fill=as.character(year)))+
 #offense over the years
 
 ##MC
-ggplot(hc_mc_comp, aes(offense, fill=as.character(year)))+
+
+hc_mc_comp1$offense <- factor(hc_mc_comp1$offense, levels=c("Vandalism", "Intimidation", "Assault", "Other", "Arson"), ordered=TRUE)
+
+ggplot(hc_mc_comp1, aes(offense, fill=as.character(year)))+
   geom_bar(alpha=0.8)+
   facet_wrap(~year)+
   theme_light()+
@@ -296,7 +307,10 @@ ggplot(hc_mc_comp, aes(offense, fill=as.character(year)))+
   scale_fill_brewer(palette = "Set1")
 
 ##US
-ggplot(hc_us_comp, aes(offense, fill=as.character(year)))+
+
+hc_us_comp1$offense <- factor(hc_us_comp1$offense, levels=c("Vandalism", "Intimidation", "Assault", "Other", "Arson"), ordered=TRUE)
+
+ggplot(hc_us_comp1, aes(offense, fill=as.character(year)))+
   geom_bar(alpha=0.8)+
   facet_wrap(~year)+
   theme_light()+
@@ -402,7 +416,12 @@ grid.arrange(p1, p2, p3, nrow = 1)
 #Recommendations
 
 ```{r}
-ggplot(hc_mc%>%filter(!is.na(suspect_count)), aes(suspect_count, fill=offense))+
+##Reordering bars
+hc_mc1 <- hc_mc
+hc_mc1$offense <- factor(hc_mc1$offense, levels=c("Vandalism", "Intimidation", "Assault", "Other", "Arson"), ordered=TRUE)
+
+#Plot
+ggplot(hc_mc1%>%filter(!is.na(suspect_count)), aes(suspect_count, fill=offense))+
   geom_bar()+
   facet_grid(~offense)+
   scale_fill_brewer(palette = "Dark2")+
