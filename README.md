@@ -24,7 +24,7 @@ This repository contains 9 files:
   
 5- visualizations_and_statistical_analysis.Rmd
 
-  contains the R code that performes some statistical analyses and produces more sofisticated visualizations (for answering a couple of research questions).
+  contains the R code that performs some statistical analyses and produces more sofisticated visualizations (for answering a couple of research questions).
   
 6- visualizations_and_statistical_analysis_2.ipynb
 
